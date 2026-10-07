@@ -43,7 +43,7 @@ matters:
     judge: "[name]"
     next_event: { what: "status hearing", date: 2026-11-04, source: "docket entry 47" }
     related: [cab-2024-xxxxxx]
-    documents: "Drive: Capitol Vista/2023-LTB"
+    documents: "Drive: Housing case/2023-LTB"
     risk: high          # low | medium | high | critical
     last_checked_docket: null
     status: active

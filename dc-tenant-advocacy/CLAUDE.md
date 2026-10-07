@@ -46,7 +46,7 @@ Deadline rules live in `references/dc-deadline-rules.yaml`. Cause-of-action elem
 
 The matter ledger lives at `~/.claude/plugins/config/claude-for-legal/dc-tenant-advocacy/matters/_log.yaml`, one entry per case (case number, court, branch, posture, side, judge, next event, status). It is created by `/dc-tenant-advocacy:matter-ledger --init` and is never committed to any repository. Per-matter files: `matters/<slug>/history.md` (append-only), `chronology.md`, `claim-charts/`.
 
-**Document storage** (read at runtime, never copied into this repo): [PLACEHOLDER — e.g., "Google Drive → Capitol Vista → <case number>", "Notion → Litigation workspace"]
+**Document storage** (read at runtime, never copied into this repo): [PLACEHOLDER — e.g., "Google Drive → Housing case → <case number>", "Notion → Litigation workspace"]
 
 ---
 
