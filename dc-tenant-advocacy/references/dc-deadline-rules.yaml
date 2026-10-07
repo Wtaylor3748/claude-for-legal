@@ -1,0 +1,187 @@
+# D.C. deadline rule table — consumed by the deadlines and docket-to-deadlines skills.
+#
+# EVERY ROW IS A LEAD, NOT A CALENDAR ENTRY. Case-specific orders and the judge's
+# standing orders override everything here. Rules change; the `status` field says
+# whether a row was checked against the official text and when.
+#
+#   status: verify                      -> from model knowledge; check the current rule text before relying
+#   status: settled-YYYY-MM-DD          -> checked against the official rule text on that date
+#
+# Official sources:
+#   Superior Court rules: https://www.dccourts.gov/superior-court/rules
+#   DCCA rules:           https://www.dccourts.gov/court-of-appeals/rules
+#   D.C. Code:            https://code.dccouncil.gov/
+#
+# Day-counting baseline: Super. Ct. Civ. R. 6(a) — exclude the trigger day, count every
+# day including weekends/holidays, and if the last day is a weekend or court holiday,
+# roll to the next court day. Add 3 days for service by mail under Civ. R. 6(d).
+# (status: verify)
+
+defaults:
+  unknown_trigger:
+    confidence: low
+    needs_verification: true
+    note: "No rule row matches this docket event. Do not default — read the order/notice and ask."
+
+rules:
+  # --- Superior Court, Civil Actions Branch (Civ. R.) ---
+  - id: civ-answer
+    court: super-ct-civil
+    trigger: "service of summons and complaint"
+    deadline: "21 days after service"
+    rule: "Super. Ct. Civ. R. 12(a)(1)(A)"
+    status: verify
+    confidence: high
+
+  - id: civ-answer-counterclaim
+    court: super-ct-civil
+    trigger: "service of a counterclaim"
+    deadline: "21 days after service"
+    rule: "Super. Ct. Civ. R. 12(a)(1)(B)"
+    status: verify
+    confidence: high
+
+  - id: civ-motion-opposition
+    court: super-ct-civil
+    trigger: "service of a motion"
+    deadline: "14 days after service (plus 3 if served by mail)"
+    rule: "Super. Ct. Civ. R. 12-I(e)"
+    status: verify
+    confidence: medium
+    note: "Judges frequently set different briefing schedules by order — check the docket for one."
+
+  - id: civ-msj-opposition
+    court: super-ct-civil
+    trigger: "service of a motion for summary judgment"
+    deadline: "14 days after service unless the court orders otherwise; must include a statement of genuinely disputed material facts"
+    rule: "Super. Ct. Civ. R. 12-I(e); Civ. R. 56(c)"
+    status: verify
+    confidence: medium
+
+  - id: civ-alter-amend
+    court: super-ct-civil
+    trigger: "entry of judgment"
+    deadline: "28 days after entry; cannot be extended"
+    rule: "Super. Ct. Civ. R. 59(e); Civ. R. 6(b)(2)"
+    status: verify
+    confidence: high
+    note: "A timely Rule 59(e) motion tolls the time to appeal (DCCA R. 4(a)(4)). A Rule 60(b) motion generally does not unless filed within the Rule 59 window."
+
+  - id: civ-relief-from-judgment
+    court: super-ct-civil
+    trigger: "entry of judgment or order"
+    deadline: "reasonable time; no more than 1 year for grounds (1)–(3)"
+    rule: "Super. Ct. Civ. R. 60(c)(1)"
+    status: verify
+    confidence: high
+
+  - id: civ-discovery-responses
+    court: super-ct-civil
+    trigger: "service of interrogatories / requests for production / requests for admission"
+    deadline: "30 days after service"
+    rule: "Super. Ct. Civ. R. 33(b)(2), 34(b)(2)(A), 36(a)(3)"
+    status: verify
+    confidence: high
+    note: "Unanswered requests for admission are deemed admitted — treat as 🔴."
+
+  # --- Superior Court, Landlord and Tenant Branch ---
+  - id: ltb-initial-hearing
+    court: super-ct-ltb
+    trigger: "service of LTB complaint and summons"
+    deadline: "appear at the initial hearing date on the summons; answer/defenses may be raised at or before that hearing"
+    rule: "Super. Ct. L&T R. 3, 4, 5, 7"
+    status: verify
+    confidence: medium
+    note: "Failure to appear risks default judgment for possession. Confirm current LTB rules — the Branch's procedures were amended repeatedly after 2020."
+
+  - id: ltb-protective-order
+    court: super-ct-ltb
+    trigger: "landlord motion for protective order (rent into court registry)"
+    deadline: "respond before the hearing set on the motion; raise habitability as a ground to reduce or deny"
+    rule: "Bell v. Tsintolas Realty Co., 430 F.2d 474 (D.C. Cir. 1970); McNeal v. Habib, 346 A.2d 508 (D.C. 1975)"
+    status: verify
+    confidence: medium
+
+  - id: ltb-vacate-default
+    court: super-ct-ltb
+    trigger: "entry of default or default judgment in LTB"
+    deadline: "move promptly; Civ. R. 55(c)/60(b) standards apply via L&T R. 2 — check L&T R. 13 for branch-specific timing"
+    rule: "Super. Ct. L&T R. 2, 13; Civ. R. 55(c), 60(b)"
+    status: verify
+    confidence: low
+
+  - id: ltb-jury-demand
+    court: super-ct-ltb
+    trigger: "case set for trial"
+    deadline: "jury demand per L&T R. 6 — check timing on current rule"
+    rule: "Super. Ct. L&T R. 6"
+    status: verify
+    confidence: low
+
+  # --- D.C. Court of Appeals ---
+  - id: dcca-notice-of-appeal
+    court: dcca
+    trigger: "entry of final judgment or appealable order on the Superior Court docket"
+    deadline: "30 days after entry"
+    rule: "D.C. App. R. 4(a)(1)"
+    status: verify
+    confidence: high
+    note: "Jurisdictional — missing it ends the appeal. Tolled by timely Rule 50(b)/52(b)/59 motions (D.C. App. R. 4(a)(4))."
+
+  - id: dcca-appellant-brief
+    court: dcca
+    trigger: "clerk's notice that the record is complete / briefing order"
+    deadline: "per the DCCA briefing order (typically 40 days)"
+    rule: "D.C. App. R. 31(a)"
+    status: verify
+    confidence: medium
+
+  - id: dcca-appellee-brief
+    court: dcca
+    trigger: "service of appellant's brief"
+    deadline: "per briefing order (typically 30 days)"
+    rule: "D.C. App. R. 31(a)"
+    status: verify
+    confidence: medium
+
+  - id: dcca-reply-brief
+    court: dcca
+    trigger: "service of appellee's brief"
+    deadline: "per briefing order (typically 21 days)"
+    rule: "D.C. App. R. 31(a)"
+    status: verify
+    confidence: medium
+
+  - id: dcca-rehearing
+    court: dcca
+    trigger: "entry of DCCA judgment/opinion"
+    deadline: "14 days after entry"
+    rule: "D.C. App. R. 35(c), 40(a)"
+    status: verify
+    confidence: medium
+
+  # --- Statutory / administrative ---
+  - id: retaliation-presumption-window
+    court: statutory
+    trigger: "tenant's protected act (complaint to agency, organizing, lawsuit, request for repairs)"
+    deadline: "landlord action within 6 months is presumed retaliatory"
+    rule: "D.C. Code § 42-3505.02(b)"
+    status: settled-2026-10-07
+    source: "Borger Mgmt., Inc. v. Sindram, 886 A.2d 52, 63 (D.C. 2005) [CourtListener] — confirms the six-month presumption; verify current statutory text for the list of protected acts"
+    confidence: high
+
+  - id: dc-register-comment-period
+    court: agency
+    trigger: "publication of a notice of proposed rulemaking in the D.C. Register"
+    deadline: "at least 30 days after publication unless the notice states otherwise — read the notice"
+    rule: "D.C. Code § 2-505(a)"
+    status: verify
+    confidence: medium
+
+  - id: federal-register-comment-period
+    court: agency
+    trigger: "NPRM published in the Federal Register"
+    deadline: "date stated in the notice (DATES section)"
+    rule: "5 U.S.C. § 553(c); the notice itself"
+    status: verify
+    confidence: high

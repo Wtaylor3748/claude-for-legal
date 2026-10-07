@@ -122,6 +122,15 @@
       "author": {
         "name": "Thomson Reuters"
       }
+    },
+    {
+      "name": "dc-tenant-advocacy",
+      "displayName": "D.C. Tenant Advocacy",
+      "source": "./dc-tenant-advocacy",
+      "description": "For self-represented tenants in the District of Columbia: element-by-element proof charts for habitability, CPPA, and retaliation claims, record-cited chronologies and brief sections, D.C. docket-to-deadline mapping, and the civic side — D.C. Register and Council watch, public comments, Council testimony, and public messaging with a litigation-safety check.",
+      "author": {
+        "name": "Wtaylor3748"
+      }
     }
   ]
 }
